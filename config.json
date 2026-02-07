@@ -1,0 +1,145 @@
+{
+  "app_name": "Injection Molding Quality Checker",
+  "version": "1.0.0",
+  "author": "Quality Assurance Team",
+  "description": "AI-powered quality prediction and optimization system for injection molding",
+  
+  "process_parameters": {
+    "melt_temperature": {
+      "min": 180,
+      "max": 280,
+      "unit": "°C",
+      "optimal_range": [220, 240],
+      "default": 230
+    },
+    "mold_temperature": {
+      "min": 20,
+      "max": 100,
+      "unit": "°C",
+      "optimal_range": [45, 65],
+      "default": 50
+    },
+    "injection_pressure": {
+      "min": 20,
+      "max": 150,
+      "unit": "MPa",
+      "optimal_range": [40, 90],
+      "default": 75
+    },
+    "holding_pressure": {
+      "min": 10,
+      "max": 100,
+      "unit": "MPa",
+      "optimal_range": [50, 75],
+      "default": 65
+    },
+    "holding_time": {
+      "min": 2,
+      "max": 60,
+      "unit": "seconds",
+      "optimal_range": [10, 20],
+      "default": 15
+    },
+    "cooling_time": {
+      "min": 5,
+      "max": 120,
+      "unit": "seconds",
+      "optimal_range": [25, 45],
+      "default": 35
+    }
+  },
+  
+  "geometry_parameters": {
+    "wall_thickness": {
+      "min": 0.5,
+      "max": 5.0,
+      "unit": "mm",
+      "optimal_range": [1.5, 3.5],
+      "default": 2.5
+    },
+    "part_volume": {
+      "min": 10,
+      "max": 300,
+      "unit": "cm³",
+      "optimal_range": [50, 150],
+      "default": 80
+    },
+    "aspect_ratio": {
+      "min": 0.5,
+      "max": 4.0,
+      "unit": "ratio",
+      "optimal_range": [0.8, 2.5],
+      "default": 1.5
+    }
+  },
+  
+  "quality_targets": {
+    "warpage_percent": {
+      "min": 0,
+      "target": 5,
+      "unit": "%"
+    },
+    "sinkage_percent": {
+      "min": 0,
+      "target": 2,
+      "unit": "%"
+    },
+    "overall_quality_score": {
+      "min": 0,
+      "max": 100,
+      "target": 95,
+      "unit": "%"
+    }
+  },
+  
+  "quality_ratings": {
+    "excellent": {
+      "range": [95, 100],
+      "rating": "⭐⭐⭐⭐⭐",
+      "description": "EXCELLENT - Meets all quality standards"
+    },
+    "good": {
+      "range": [85, 95],
+      "rating": "⭐⭐⭐⭐",
+      "description": "GOOD - Minor adjustments possible"
+    },
+    "acceptable": {
+      "range": [75, 85],
+      "rating": "⭐⭐⭐",
+      "description": "ACCEPTABLE - Monitor closely"
+    },
+    "needs_improvement": {
+      "range": [60, 75],
+      "rating": "⭐⭐",
+      "description": "NEEDS IMPROVEMENT - Optimization recommended"
+    },
+    "poor": {
+      "range": [0, 60],
+      "rating": "⭐",
+      "description": "POOR - Significant improvements needed"
+    }
+  },
+  
+  "model_config": {
+    "warpage_model": {
+      "type": "MLP Regressor",
+      "hidden_layers": [64, 32],
+      "activation": "relu",
+      "max_iterations": 500
+    },
+    "sinkage_model": {
+      "type": "MLP Regressor",
+      "hidden_layers": [64, 32],
+      "activation": "relu",
+      "max_iterations": 500
+    },
+    "training_samples": 500
+  },
+  
+  "ui_config": {
+    "page_title": "Injection Molding Quality Checker",
+    "page_icon": "🔍",
+    "layout": "wide",
+    "theme": "light"
+  }
+}
