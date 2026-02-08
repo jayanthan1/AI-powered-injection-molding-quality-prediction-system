@@ -88,8 +88,32 @@ page = st.sidebar.radio("Select Page", [
 # PAGE: Quality Analysis
 # ============================================================================
 if page == "📊 Quality Analysis":
-    st.markdown("## Input Process Parameters & Geometry")
+    st.markdown("## Input Process Parameters & Geometry & Part Diagram")
     
+    # Image upload section
+    st.markdown("### 📸 Upload Part Diagram/Image (Optional)")
+    uploaded_image = st.file_uploader(
+        "Upload part diagram, CAD preview, or product image",
+        type=["jpg", "jpeg", "png", "bmp", "gif", "webp"],
+        help="Supported formats: JPG, PNG, BMP, GIF, WEBP"
+    )
+    
+    # Display uploaded image
+    if uploaded_image is not None:
+        col_img1, col_img2 = st.columns([1, 1])
+        with col_img1:
+            st.image(uploaded_image, caption="Uploaded Part Diagram", use_column_width=True)
+        with col_img2:
+            st.info(f"""
+            **Image Details:**
+            - Filename: {uploaded_image.name}
+            - Size: {uploaded_image.size / 1024:.1f} KB
+            - Type: {uploaded_image.type}
+            """)
+    else:
+        st.info("📤 Upload a part diagram or CAD image for reference (optional)")
+    
+    st.markdown("---")
     col1, col2 = st.columns(2)
     
     with col1:
@@ -166,7 +190,9 @@ if page == "📊 Quality Analysis":
             'process_params': process_params,
             'geometry_params': geometry_params,
             'predictions': predictions,
-            'quality_score': quality_data['overall_quality']
+            'quality_score': quality_data['overall_quality'],
+            'image_filename': uploaded_image.name if uploaded_image else None,
+            'image_data': uploaded_image.getvalue() if uploaded_image else None
         })
         
         # Display results
@@ -420,19 +446,58 @@ elif page == "📈 History & Reports":
     if not st.session_state.history:
         st.info("No analysis records yet. Start by analyzing a product!")
     else:
-        # Convert history to DataFrame
-        history_data = []
-        for record in st.session_state.history:
-            history_data.append({
-                'Timestamp': record['timestamp'],
-                'Warpage %': f"{record['predictions']['warpage_percent']:.2f}%",
-                'Sinkage %': f"{record['predictions']['sinkage_percent']:.2f}%",
-                'Quality Score': f"{record['quality_score']:.1f}%",
-                'Status': '✅ PASS' if record['quality_score'] >= 95 else '⚠️ NEEDS IMPROVEMENT'
-            })
+        # View detailed analysis with images
+        st.markdown("### 📋 Detailed Analysis Results")
         
-        df_history = pd.DataFrame(history_data)
-        st.dataframe(df_history, use_container_width=True)
+        analysis_view = st.radio("View by:", ["Table View", "Detailed View with Images"], horizontal=True)
+        
+        if analysis_view == "Table View":
+            # Convert history to DataFrame
+            history_data = []
+            for i, record in enumerate(st.session_state.history, 1):
+                history_data.append({
+                    '#': i,
+                    'Timestamp': record['timestamp'],
+                    'Warpage %': f"{record['predictions']['warpage_percent']:.2f}%",
+                    'Sinkage %': f"{record['predictions']['sinkage_percent']:.2f}%",
+                    'Quality Score': f"{record['quality_score']:.1f}%",
+                    'Image': '📸' if record.get('image_filename') else '-',
+                    'Status': '✅ PASS' if record['quality_score'] >= 95 else '⚠️ NEEDS IMPROVEMENT'
+                })
+            
+            df_history = pd.DataFrame(history_data)
+            st.dataframe(df_history, use_container_width=True)
+        
+        else:  # Detailed View with Images
+            for i, record in enumerate(st.session_state.history, 1):
+                with st.expander(f"📊 Analysis #{i} - {record['timestamp']}", expanded=False):
+                    col1, col2 = st.columns([1, 1])
+                    
+                    with col1:
+                        st.markdown(f"""
+                        **Quality Metrics:**
+                        - Warpage: {record['predictions']['warpage_percent']:.2f}%
+                        - Sinkage: {record['predictions']['sinkage_percent']:.2f}%
+                        - Quality Score: {record['quality_score']:.1f}%
+                        - Status: {'✅ PASS' if record['quality_score'] >= 95 else '⚠️ NEEDS IMPROVEMENT'}
+                        """)
+                        
+                        st.markdown("**Process Parameters:**")
+                        for key, val in record['process_params'].items():
+                            st.write(f"- {key.replace('_', ' ').title()}: {val}")
+                        
+                        st.markdown("**Geometry Parameters:**")
+                        for key, val in record['geometry_params'].items():
+                            st.write(f"- {key.replace('_', ' ').title()}: {val}")
+                    
+                    with col2:
+                        if record.get('image_data'):
+                            st.markdown("**📸 Part Diagram:**")
+                            st.image(record['image_data'], caption=record['image_filename'], use_column_width=True)
+                        else:
+                            st.info("No image uploaded for this analysis")
+        
+        st.markdown("---")
         
         # Quality trend
         st.markdown("### 📈 Quality Trend")
