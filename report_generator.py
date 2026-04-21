@@ -44,6 +44,7 @@ PROCESS PARAMETERS
 ────────────────────────────────────────────────────────────────
 Melt Temperature:        {analysis_data['process_params']['melt_temp']:.1f}°C
 Mold Temperature:        {analysis_data['process_params']['mold_temp']:.1f}°C
+Part Temperature:        {analysis_data['process_params']['part_temp']:.1f}°C
 Injection Pressure:      {analysis_data['process_params']['injection_pressure']:.1f} MPa
 Holding Pressure:        {analysis_data['process_params']['holding_pressure']:.1f} MPa
 Holding Time:            {analysis_data['process_params']['holding_time']:.1f} seconds
@@ -52,6 +53,7 @@ Cooling Time:            {analysis_data['process_params']['cooling_time']:.1f} s
 ────────────────────────────────────────────────────────────────
 PART GEOMETRY
 ────────────────────────────────────────────────────────────────
+Time to Fill:            {analysis_data['geometry_params']['time_to_fill']:.1f} seconds
 Wall Thickness:          {analysis_data['geometry_params']['wall_thickness']:.1f} mm
 Part Volume:             {analysis_data['geometry_params']['part_volume']:.1f} cm³
 Aspect Ratio:            {analysis_data['geometry_params']['aspect_ratio']:.2f}
