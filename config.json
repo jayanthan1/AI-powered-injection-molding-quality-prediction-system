@@ -19,6 +19,13 @@
       "optimal_range": [45, 65],
       "default": 50
     },
+    "part_temperature": {
+      "min": 20,
+      "max": 100,
+      "unit": "°C",
+      "optimal_range": [40, 70],
+      "default": 60
+    },
     "injection_pressure": {
       "min": 20,
       "max": 150,
@@ -50,6 +57,20 @@
   },
   
   "geometry_parameters": {
+    "cooling_time": {
+      "min": 5,
+      "max": 120,
+      "unit": "seconds",
+      "optimal_range": [25, 45],
+      "default": 35
+    },
+    "time_to_fill": {
+      "min": 1,
+      "max": 60,
+      "unit": "seconds",
+      "optimal_range": [2, 15],
+      "default": 8
+    },
     "wall_thickness": {
       "min": 0.5,
       "max": 5.0,
