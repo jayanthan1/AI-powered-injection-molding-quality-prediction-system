@@ -33,6 +33,7 @@ class MoldingQualityPredictor:
         # Process Parameters (from the research paper)
         melt_temp = np.random.uniform(200, 260, samples)  # 200-260°C
         mold_temp = np.random.uniform(30, 80, samples)    # 30-80°C
+        part_temp = np.random.uniform(30, 90, samples)    # 30-90°C
         injection_pressure = np.random.uniform(30, 120, samples)  # 30-120 MPa
         holding_pressure = np.random.uniform(20, 80, samples)     # 20-80 MPa
         holding_time = np.random.uniform(5, 30, samples)         # 5-30 seconds
@@ -42,21 +43,24 @@ class MoldingQualityPredictor:
         wall_thickness = np.random.uniform(1.5, 4.0, samples)  # 1.5-4.0 mm
         part_volume = np.random.uniform(20, 200, samples)      # 20-200 cm³
         aspect_ratio = np.random.uniform(0.5, 3.0, samples)    # Length/Width ratio
+        time_to_fill = np.random.uniform(2, 20, samples)       # 2-20 seconds
         
         # Create feature matrix
         X = np.column_stack([
-            melt_temp, mold_temp, injection_pressure, holding_pressure,
-            holding_time, cooling_time, wall_thickness, part_volume, aspect_ratio
+            melt_temp, mold_temp, part_temp, injection_pressure, holding_pressure,
+            holding_time, cooling_time, wall_thickness, part_volume, aspect_ratio, time_to_fill
         ])
         
         # Generate target variables (warpage % and sinkage %)
         # Based on formula from research: these are influenced by process parameters
         warpage = (
             0.15 * (melt_temp - 230) ** 2 / 1000 +
-            0.10 * (mold_temp - 50) ** 2 / 100 +
+            0.08 * (mold_temp - 50) ** 2 / 100 +
+            0.08 * (part_temp - 60) ** 2 / 100 +
             0.05 * (cooling_time - 30) / 20 +
             0.12 * wall_thickness +
             0.08 * aspect_ratio +
+            0.05 * (time_to_fill - 8) / 5 +
             np.random.normal(0, 0.5, samples)
         )
         warpage = np.clip(warpage, 0.5, 15)
@@ -66,6 +70,8 @@ class MoldingQualityPredictor:
             0.18 * (holding_time - 15) / 10 +
             0.15 * wall_thickness ** 2 / 5 +
             0.12 * (mold_temp - 50) / 30 +
+            0.08 * (part_temp - 60) / 30 +
+            0.06 * (time_to_fill - 8) / 5 +
             np.random.normal(0, 0.4, samples)
         )
         sinkage = np.clip(sinkage, 0.3, 12)
@@ -127,8 +133,8 @@ class MoldingQualityPredictor:
         Predict warpage and sinkage
         
         Args:
-            process_params (dict): Melt temp, mold temp, pressures, times
-            geometry_params (dict): Wall thickness, volume, aspect ratio
+            process_params (dict): Melt temp, mold temp, part temp, pressures, times
+            geometry_params (dict): Wall thickness, volume, aspect ratio, time to fill
             
         Returns:
             dict: Predicted warpage and sinkage percentages
@@ -137,13 +143,15 @@ class MoldingQualityPredictor:
         features = np.array([[
             process_params['melt_temp'],
             process_params['mold_temp'],
+            process_params['part_temp'],
             process_params['injection_pressure'],
             process_params['holding_pressure'],
             process_params['holding_time'],
             process_params['cooling_time'],
             geometry_params['wall_thickness'],
             geometry_params['part_volume'],
-            geometry_params['aspect_ratio']
+            geometry_params['aspect_ratio'],
+            geometry_params['time_to_fill']
         ]])
         
         # Scale features
