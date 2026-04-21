@@ -11,10 +11,12 @@ class OptimizationEngine:
         self.optimal_ranges = {
             'melt_temp': (220, 240),      # °C - from research paper
             'mold_temp': (45, 65),        # °C
+            'part_temp': (40, 70),        # °C
             'injection_pressure': (40, 90),  # MPa
             'holding_pressure': (50, 75),    # MPa
             'holding_time': (10, 20),     # seconds
-            'cooling_time': (25, 45)      # seconds
+            'cooling_time': (25, 45),     # seconds
+            'time_to_fill': (2, 15)       # seconds
         }
     
     def generate_suggestions(self, process_params, geometry_params, predictions):
