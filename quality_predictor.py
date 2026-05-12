@@ -125,13 +125,34 @@ class MoldingQualityPredictor:
             joblib.dump(self.scaler, os.path.join(self.model_path, "scaler.pkl"))
         except Exception as e:
             print(f"Warning: Could not save models: {e}")
-    
+
+    def expected_feature_count(self):
+        return 11
+
     def load_models(self):
         """Load pre-trained models"""
         try:
             self.warpage_model = joblib.load(os.path.join(self.model_path, "warpage_model.pkl"))
             self.sinkage_model = joblib.load(os.path.join(self.model_path, "sinkage_model.pkl"))
             self.scaler = joblib.load(os.path.join(self.model_path, "scaler.pkl"))
+
+            # Validate loaded artifacts match current feature set
+            expected = self.expected_feature_count()
+            if getattr(self.scaler, 'n_features_in_', None) != expected:
+                raise ValueError(
+                    f"Loaded scaler expects {getattr(self.scaler, 'n_features_in_', None)} features,"
+                    f" but current predictor uses {expected} features."
+                )
+            if getattr(self.warpage_model, 'n_features_in_', None) != expected:
+                raise ValueError(
+                    f"Loaded warpage model expects {getattr(self.warpage_model, 'n_features_in_', None)} features,"
+                    f" but current predictor uses {expected} features."
+                )
+            if getattr(self.sinkage_model, 'n_features_in_', None) != expected:
+                raise ValueError(
+                    f"Loaded sinkage model expects {getattr(self.sinkage_model, 'n_features_in_', None)} features,"
+                    f" but current predictor uses {expected} features."
+                )
             return True
         except Exception as e:
             print(f"Error loading models: {e}")

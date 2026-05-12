@@ -64,6 +64,7 @@ def test_quality_predictor():
         process_params = {
             'melt_temp': 230,
             'mold_temp': 50,
+            'part_temp': 60,
             'injection_pressure': 75,
             'holding_pressure': 65,
             'holding_time': 15,
@@ -73,7 +74,8 @@ def test_quality_predictor():
         geometry_params = {
             'wall_thickness': 2.5,
             'part_volume': 80,
-            'aspect_ratio': 1.5
+            'aspect_ratio': 1.5,
+            'time_to_fill': 8
         }
         
         predictions = predictor.predict(process_params, geometry_params)
@@ -162,6 +164,7 @@ def test_report_generator():
             'process_params': {
                 'melt_temp': 230,
                 'mold_temp': 50,
+                'part_temp': 60,
                 'injection_pressure': 75,
                 'holding_pressure': 65,
                 'holding_time': 15,
@@ -170,7 +173,8 @@ def test_report_generator():
             'geometry_params': {
                 'wall_thickness': 2.5,
                 'part_volume': 80,
-                'aspect_ratio': 1.5
+                'aspect_ratio': 1.5,
+                'time_to_fill': 8
             },
             'predictions': {
                 'warpage_percent': 6.9,
