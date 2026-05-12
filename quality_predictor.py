@@ -15,13 +15,17 @@ class MoldingQualityPredictor:
         self.warpage_model = None
         self.sinkage_model = None
         self.scaler = StandardScaler()
-        self.model_path = "models/"
+        # Use absolute path relative to script location
+        self.model_path = os.path.join(os.path.dirname(__file__), "models")
         self.create_model_dir()
         
     def create_model_dir(self):
         """Create models directory if it doesn't exist"""
-        if not os.path.exists(self.model_path):
-            os.makedirs(self.model_path)
+        try:
+            if not os.path.exists(self.model_path):
+                os.makedirs(self.model_path, exist_ok=True)
+        except Exception as e:
+            print(f"Warning: Could not create models directory: {e}")
     
     def generate_training_data(self, samples=500):
         """
@@ -114,18 +118,23 @@ class MoldingQualityPredictor:
     
     def save_models(self):
         """Save trained models to disk"""
-        joblib.dump(self.warpage_model, f"{self.model_path}warpage_model.pkl")
-        joblib.dump(self.sinkage_model, f"{self.model_path}sinkage_model.pkl")
-        joblib.dump(self.scaler, f"{self.model_path}scaler.pkl")
+        try:
+            self.create_model_dir()
+            joblib.dump(self.warpage_model, os.path.join(self.model_path, "warpage_model.pkl"))
+            joblib.dump(self.sinkage_model, os.path.join(self.model_path, "sinkage_model.pkl"))
+            joblib.dump(self.scaler, os.path.join(self.model_path, "scaler.pkl"))
+        except Exception as e:
+            print(f"Warning: Could not save models: {e}")
     
     def load_models(self):
         """Load pre-trained models"""
         try:
-            self.warpage_model = joblib.load(f"{self.model_path}warpage_model.pkl")
-            self.sinkage_model = joblib.load(f"{self.model_path}sinkage_model.pkl")
-            self.scaler = joblib.load(f"{self.model_path}scaler.pkl")
+            self.warpage_model = joblib.load(os.path.join(self.model_path, "warpage_model.pkl"))
+            self.sinkage_model = joblib.load(os.path.join(self.model_path, "sinkage_model.pkl"))
+            self.scaler = joblib.load(os.path.join(self.model_path, "scaler.pkl"))
             return True
-        except:
+        except Exception as e:
+            print(f"Error loading models: {e}")
             return False
     
     def predict(self, process_params, geometry_params):
@@ -139,6 +148,13 @@ class MoldingQualityPredictor:
         Returns:
             dict: Predicted warpage and sinkage percentages
         """
+        # Validate models are loaded
+        if self.warpage_model is None or self.sinkage_model is None:
+            raise ValueError("Models not loaded. Please train or load models first.")
+        
+        if not hasattr(self.scaler, 'mean_') or self.scaler.mean_ is None:
+            raise ValueError("Scaler not fitted. Please train models first.")
+        
         # Create feature vector
         features = np.array([[
             process_params['melt_temp'],
