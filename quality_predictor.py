@@ -129,12 +129,22 @@ class MoldingQualityPredictor:
     def load_models(self):
         """Load pre-trained models"""
         try:
-            self.warpage_model = joblib.load(os.path.join(self.model_path, "warpage_model.pkl"))
-            self.sinkage_model = joblib.load(os.path.join(self.model_path, "sinkage_model.pkl"))
-            self.scaler = joblib.load(os.path.join(self.model_path, "scaler.pkl"))
+            warpage_model = joblib.load(os.path.join(self.model_path, "warpage_model.pkl"))
+            sinkage_model = joblib.load(os.path.join(self.model_path, "sinkage_model.pkl"))
+            scaler = joblib.load(os.path.join(self.model_path, "scaler.pkl"))
+            
+            # Validate that scaler has correct number of features (11)
+            if not hasattr(scaler, 'n_features_in_') or scaler.n_features_in_ != 11:
+                print(f"Warning: Loaded scaler has {getattr(scaler, 'n_features_in_', 'unknown')} features, expected 11. Retraining...")
+                return False
+            
+            self.warpage_model = warpage_model
+            self.sinkage_model = sinkage_model
+            self.scaler = scaler
+            print("Models loaded successfully!")
             return True
         except Exception as e:
-            print(f"Error loading models: {e}")
+            print(f"Error loading models: {e}. Will retrain...")
             return False
     
     def predict(self, process_params, geometry_params):
@@ -155,8 +165,11 @@ class MoldingQualityPredictor:
         if not hasattr(self.scaler, 'mean_') or self.scaler.mean_ is None:
             raise ValueError("Scaler not fitted. Please train models first.")
         
-        # Create feature vector
-        features = np.array([[
+        if not hasattr(self.scaler, 'n_features_in_'):
+            raise ValueError("Scaler not properly fitted. Please retrain models.")
+        
+        # Create feature vector with explicit shape
+        feature_list = [
             process_params['melt_temp'],
             process_params['mold_temp'],
             process_params['part_temp'],
@@ -168,7 +181,19 @@ class MoldingQualityPredictor:
             geometry_params['part_volume'],
             geometry_params['aspect_ratio'],
             geometry_params['time_to_fill']
-        ]])
+        ]
+        
+        if len(feature_list) != 11:
+            raise ValueError(f"Expected 11 features, got {len(feature_list)}")
+        
+        features = np.array([feature_list], dtype=np.float64)
+        
+        # Validate shape matches scaler expectations
+        if features.shape[1] != self.scaler.n_features_in_:
+            raise ValueError(
+                f"Feature mismatch: expected {self.scaler.n_features_in_} features, "
+                f"got {features.shape[1]}. Models may need retraining."
+            )
         
         # Scale features
         features_scaled = self.scaler.transform(features)
