@@ -132,7 +132,6 @@ class MoldingQualityPredictor:
     def load_models(self):
         """Load pre-trained models"""
         try:
-
             self.warpage_model = joblib.load(os.path.join(self.model_path, "warpage_model.pkl"))
             self.sinkage_model = joblib.load(os.path.join(self.model_path, "sinkage_model.pkl"))
             self.scaler = joblib.load(os.path.join(self.model_path, "scaler.pkl"))
@@ -154,20 +153,6 @@ class MoldingQualityPredictor:
                     f"Loaded sinkage model expects {getattr(self.sinkage_model, 'n_features_in_', None)} features,"
                     f" but current predictor uses {expected} features."
                 )
-=======
-            warpage_model = joblib.load(os.path.join(self.model_path, "warpage_model.pkl"))
-            sinkage_model = joblib.load(os.path.join(self.model_path, "sinkage_model.pkl"))
-            scaler = joblib.load(os.path.join(self.model_path, "scaler.pkl"))
-            
-            # Validate that scaler has correct number of features (11)
-            if not hasattr(scaler, 'n_features_in_') or scaler.n_features_in_ != 11:
-                print(f"Warning: Loaded scaler has {getattr(scaler, 'n_features_in_', 'unknown')} features, expected 11. Retraining...")
-                return False
-            
-            self.warpage_model = warpage_model
-            self.sinkage_model = sinkage_model
-            self.scaler = scaler
-            print("Models loaded successfully!")
             return True
         except Exception as e:
             print(f"Error loading models: {e}. Will retrain...")
